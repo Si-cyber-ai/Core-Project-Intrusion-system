@@ -1,0 +1,31 @@
+# Node.js dependencies
+frontend/node_modules/
+
+# Build output
+frontend/build/
+
+# Python cache and compiled files
+backend/__pycache__/
+*.pyc
+
+# Environment and IDE files
+.env
+*.env
+.vscode/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Log and dataset files
+backend/data/*.json
+
+# Bat files (optional, if you don't want to share them)
+# start_backend.bat
+# start_frontend.bat
+
+# Misc
+*.log
+
+# Ignore documentation if not needed
+# ML_DATASET_DOCUMENTATION.md
