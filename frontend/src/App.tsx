@@ -5,6 +5,7 @@ import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Dashboard from './pages/Dashboard';
 import TrafficMonitor from './pages/TrafficMonitor';
+import AttackSensorSimulator from './pages/AttackSensorSimulator';
 import AlertCenter from './pages/AlertCenter';
 import HoneypotLogs from './pages/HoneypotLogs';
 import SystemStatus from './pages/SystemStatus';
@@ -33,6 +34,7 @@ function App() {
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/traffic" element={<TrafficMonitor />} />
+                  <Route path="/sensor" element={<AttackSensorSimulator />} />
                   <Route path="/alerts" element={<AlertCenter />} />
                   <Route path="/honeypot" element={<HoneypotLogs />} />
                   <Route path="/system" element={<SystemStatus />} />

@@ -1,0 +1,236 @@
+[
+  {
+    "timestamp": "2025-09-25T10:36:05.446374",
+    "sensor_id": "IDS-001",
+    "input_payload": "Hello world",
+    "status": "Normal",
+    "detected_attack_type": null,
+    "confidence": 0.0,
+    "source_ip": "127.0.0.1"
+  },
+  {
+    "timestamp": "2025-09-25T10:36:08.875483",
+    "sensor_id": "IDS-001",
+    "input_payload": "GET /ping.php?host=127.0.0.1;cat /etc/passwd",
+    "status": "Attack",
+    "detected_attack_type": "Command Injection",
+    "confidence": 0.9,
+    "source_ip": "127.0.0.1"
+  },
+  {
+    "timestamp": "2025-09-25T10:36:14.362679",
+    "sensor_id": "IDS-001",
+    "input_payload": "'; DROP TABLE users; --",
+    "status": "Attack",
+    "detected_attack_type": "SQL Injection",
+    "confidence": 0.9,
+    "source_ip": "127.0.0.1"
+  },
+  {
+    "timestamp": "2025-09-25T10:37:12.151678",
+    "sensor_id": "IDS-001",
+    "input_payload": "admin' OR '1'='1' --",
+    "status": "Normal",
+    "detected_attack_type": null,
+    "confidence": 0.0,
+    "source_ip": "127.0.0.1"
+  },
+  {
+    "timestamp": "2025-09-25T10:37:40.259482",
+    "sensor_id": "IDS-001",
+    "input_payload": "1; DROP TABLE users; --",
+    "status": "Attack",
+    "detected_attack_type": "SQL Injection",
+    "confidence": 0.9,
+    "source_ip": "127.0.0.1"
+  },
+  {
+    "timestamp": "2025-09-25T10:37:48.253990",
+    "sensor_id": "IDS-001",
+    "input_payload": "GET /ping.php?host=127.0.0.1;cat /etc/passwd",
+    "status": "Attack",
+    "detected_attack_type": "Command Injection",
+    "confidence": 0.9,
+    "source_ip": "127.0.0.1"
+  },
+  {
+    "timestamp": "2025-09-25T10:37:51.143700",
+    "sensor_id": "IDS-001",
+    "input_payload": "<script>alert('XSS')</script>",
+    "status": "Attack",
+    "detected_attack_type": "SQL Injection",
+    "confidence": 0.9,
+    "source_ip": "127.0.0.1"
+  },
+  {
+    "timestamp": "2025-09-25T10:37:53.508968",
+    "sensor_id": "IDS-001",
+    "input_payload": "GET /admin?id=1 UNION SELECT * FROM users--",
+    "status": "Attack",
+    "detected_attack_type": "SQL Injection",
+    "confidence": 0.9,
+    "source_ip": "127.0.0.1"
+  },
+  {
+    "timestamp": "2025-09-25T10:37:56.100664",
+    "sensor_id": "IDS-001",
+    "input_payload": "Hello world",
+    "status": "Normal",
+    "detected_attack_type": null,
+    "confidence": 0.0,
+    "source_ip": "127.0.0.1"
+  },
+  {
+    "timestamp": "2025-09-25T10:37:58.022474",
+    "sensor_id": "IDS-001",
+    "input_payload": "normal user login request",
+    "status": "Normal",
+    "detected_attack_type": null,
+    "confidence": 0.0,
+    "source_ip": "127.0.0.1"
+  },
+  {
+    "timestamp": "2025-09-25T10:38:01.866547",
+    "sensor_id": "IDS-001",
+    "input_payload": "normal user login request",
+    "status": "Normal",
+    "detected_attack_type": null,
+    "confidence": 0.0,
+    "source_ip": "127.0.0.1"
+  },
+  {
+    "timestamp": "2025-09-25T10:38:04.667074",
+    "sensor_id": "IDS-001",
+    "input_payload": "../../../etc/passwd",
+    "status": "Attack",
+    "detected_attack_type": "Directory Traversal",
+    "confidence": 0.9,
+    "source_ip": "127.0.0.1"
+  },
+  {
+    "timestamp": "2025-09-25T11:24:01.109481",
+    "sensor_id": "IDS-001",
+    "input_payload": "<script>alert(\"XSS\")</script>",
+    "status": "Attack",
+    "detected_attack_type": "XSS Attack",
+    "confidence": 0.9,
+    "source_ip": "127.0.0.1"
+  },
+  {
+    "timestamp": "2025-09-25T11:24:14.889160",
+    "sensor_id": "IDS-001",
+    "input_payload": "\" OR 1=1 --",
+    "status": "Normal",
+    "detected_attack_type": null,
+    "confidence": 0.0,
+    "source_ip": "127.0.0.1"
+  },
+  {
+    "timestamp": "2025-09-25T11:24:26.307336",
+    "sensor_id": "IDS-001",
+    "input_payload": "1 UNION SELECT * FROM users",
+    "status": "Attack",
+    "detected_attack_type": "SQL Injection",
+    "confidence": 0.9,
+    "source_ip": "127.0.0.1"
+  },
+  {
+    "timestamp": "2025-09-25T11:25:00.868809",
+    "sensor_id": "IDS-001",
+    "input_payload": "test malicious attack",
+    "status": "Normal",
+    "detected_attack_type": null,
+    "confidence": 0.0,
+    "source_ip": "127.0.0.1"
+  },
+  {
+    "timestamp": "2025-09-25T11:42:14.079884",
+    "sensor_id": "IDS-001",
+    "input_payload": "<script>alert('XSS')</script>",
+    "status": "Attack",
+    "detected_attack_type": "XSS Attack",
+    "confidence": 0.9,
+    "source_ip": "127.0.0.1"
+  },
+  {
+    "timestamp": "2025-09-25T11:42:19.670654",
+    "sensor_id": "IDS-001",
+    "input_payload": "';alert(String.fromCharCode(88,83,83))//'",
+    "status": "Normal",
+    "detected_attack_type": null,
+    "confidence": 0.0,
+    "source_ip": "127.0.0.1"
+  },
+  {
+    "timestamp": "2025-09-25T11:42:25.766315",
+    "sensor_id": "IDS-001",
+    "input_payload": "<iframe src='javascript:alert(1)'></iframe>",
+    "status": "Attack",
+    "detected_attack_type": "XSS Attack",
+    "confidence": 0.9,
+    "source_ip": "127.0.0.1"
+  },
+  {
+    "timestamp": "2025-09-25T11:45:00.762476",
+    "sensor_id": "IDS-001",
+    "input_payload": "username=admin&password=123456",
+    "status": "Attack",
+    "detected_attack_type": "Brute Force",
+    "confidence": 0.9,
+    "source_ip": "127.0.0.1"
+  },
+  {
+    "timestamp": "2025-09-25T11:47:16.833712",
+    "sensor_id": "IDS-001",
+    "input_payload": "AAAAAAAAAAAAAAAAAAAA\\x00BBBBBBBBBB",
+    "status": "Normal",
+    "detected_attack_type": null,
+    "confidence": 0.0,
+    "source_ip": "127.0.0.1"
+  },
+  {
+    "timestamp": "2025-09-25T11:47:24.791454",
+    "sensor_id": "IDS-001",
+    "input_payload": "AAAAAAAAAAAAAAAAAAAA\\x00BBBBBBBBBB",
+    "status": "Normal",
+    "detected_attack_type": null,
+    "confidence": 0.0,
+    "source_ip": "127.0.0.1"
+  },
+  {
+    "timestamp": "2025-09-25T11:47:42.052149",
+    "sensor_id": "IDS-001",
+    "input_payload": "GET /search?q=test%00admin",
+    "status": "Normal",
+    "detected_attack_type": null,
+    "confidence": 0.0,
+    "source_ip": "127.0.0.1"
+  },
+  {
+    "timestamp": "2025-09-25T11:48:27.656479",
+    "sensor_id": "IDS-001",
+    "input_payload": "AAAAA\\x01\\x02\\x03\\x04\\x05BBBBB\n",
+    "status": "Normal",
+    "detected_attack_type": null,
+    "confidence": 0.0,
+    "source_ip": "127.0.0.1"
+  },
+  {
+    "timestamp": "2025-09-25T11:48:34.132622",
+    "sensor_id": "IDS-001",
+    "input_payload": "AAAAA\\x01\\x02\\x03\\x04\\x05BBBB\n",
+    "status": "Normal",
+    "detected_attack_type": null,
+    "confidence": 0.0,
+    "source_ip": "127.0.0.1"
+  },
+  {
+    "timestamp": "2025-09-25T11:51:54.716653",
+    "sensor_id": "IDS-001",
+    "input_payload": "NORMAL_TEXT\\x07\\x07\\x07\\x07\\x07\\x07\\x07\\x07\\x07\\x07TRAIL",
+    "status": "Normal",
+    "detected_attack_type": null,
+    "confidence": 0.0,
+    "source_ip": "127.0.0.1"
+  }
+]

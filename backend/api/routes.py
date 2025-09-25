@@ -6,6 +6,7 @@ from typing import List, Dict, Any, Optional
 import json
 import os
 from datetime import datetime
+from core.sensor import smart_sensor, SensorInput, SensorResponse
 
 router = APIRouter()
 
@@ -354,3 +355,99 @@ async def get_dashboard_metrics(request: Request):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error getting dashboard metrics: {str(e)}")
+
+# Smart Sensor Endpoints
+@router.post("/sensor/input", response_model=SensorResponse)
+@limiter.limit("60/minute")
+async def process_sensor_input(request: Request, sensor_input: SensorInput):
+    """Process input through the smart sensor IDS pipeline"""
+    try:
+        # Process the payload through the sensor
+        response = smart_sensor.process_input(sensor_input.payload)
+        
+        # Log the sensor activity
+        sensor_log = {
+            "timestamp": response.timestamp,
+            "sensor_id": response.sensor_id,
+            "input_payload": sensor_input.payload,
+            "status": response.status.value,
+            "detected_attack_type": response.detected_attack_type,
+            "confidence": response.confidence,
+            "source_ip": request.client.host if request.client else "unknown"
+        }
+        
+        # Save sensor log to file (append to existing logs)
+        try:
+            if os.path.exists("data/sensor_logs.json"):
+                with open("data/sensor_logs.json", "r") as f:
+                    sensor_logs = json.load(f)
+            else:
+                sensor_logs = []
+            
+            sensor_logs.append(sensor_log)
+            
+            # Keep only last 1000 logs
+            if len(sensor_logs) > 1000:
+                sensor_logs = sensor_logs[-1000:]
+            
+            with open("data/sensor_logs.json", "w") as f:
+                json.dump(sensor_logs, f, indent=2)
+                
+        except Exception as log_error:
+            # Don't fail the request if logging fails
+            print(f"Warning: Could not save sensor log: {log_error}")
+        
+        return response
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing sensor input: {str(e)}")
+
+@router.get("/sensor/status")
+@limiter.limit("120/minute")
+async def get_sensor_status(request: Request):
+    """Get current sensor status"""
+    try:
+        return smart_sensor.get_status()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting sensor status: {str(e)}")
+
+@router.post("/sensor/reset")
+@limiter.limit("10/minute")
+async def reset_sensor(request: Request):
+    """Reset sensor to normal state"""
+    try:
+        smart_sensor.reset_sensor()
+        return {
+            "status": "success",
+            "message": "Sensor reset to normal state",
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error resetting sensor: {str(e)}")
+
+@router.get("/sensor/logs")
+@limiter.limit("30/minute")
+async def get_sensor_logs(request: Request, limit: int = 50):
+    """Get sensor activity logs"""
+    try:
+        if not os.path.exists("data/sensor_logs.json"):
+            return {
+                "status": "success",
+                "logs": [],
+                "total_logs": 0
+            }
+        
+        with open("data/sensor_logs.json", "r") as f:
+            sensor_logs = json.load(f)
+        
+        # Return most recent logs
+        recent_logs = sorted(sensor_logs, key=lambda x: x["timestamp"], reverse=True)[:limit]
+        
+        return {
+            "status": "success",
+            "logs": recent_logs,
+            "total_logs": len(sensor_logs)
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting sensor logs: {str(e)}")

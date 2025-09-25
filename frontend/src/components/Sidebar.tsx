@@ -9,12 +9,14 @@ import {
   Settings,
   BarChart3,
   Lock,
-  Zap
+  Zap,
+  Cpu
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: BarChart3 },
   { name: 'Traffic Monitor', href: '/traffic', icon: Activity },
+  { name: 'Sensor Simulator', href: '/sensor', icon: Cpu },
   { name: 'Alert Center', href: '/alerts', icon: AlertTriangle },
   { name: 'Honeypot Logs', href: '/honeypot', icon: Bug },
   { name: 'System Status', href: '/system', icon: Settings },

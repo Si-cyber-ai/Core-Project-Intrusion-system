@@ -14,9 +14,12 @@ import {
 } from 'lucide-react';
 
 interface RegexRule {
+  id?: number;
   name: string;
   pattern: string;
   severity: string;
+  description?: string;
+  enabled?: boolean;
 }
 
 const RuleManagement: React.FC = () => {
@@ -128,8 +131,34 @@ const RuleManagement: React.FC = () => {
     }
   };
 
-  const handleDeleteRule = (index: number) => {
-    setRules(rules.filter((_, i) => i !== index));
+  const handleDeleteRule = async (index: number) => {
+    const rule = rules[index];
+    if (!rule.id) {
+      // Fallback for rules without ID
+      setRules(rules.filter((_, i) => i !== index));
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8000/api/rules/${rule.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.status === 'success') {
+        setRules(rules.filter((_, i) => i !== index));
+      } else {
+        throw new Error(data.message || 'Failed to delete rule');
+      }
+    } catch (error) {
+      console.error('Error deleting rule:', error);
+      alert('Failed to delete rule. Please try again.');
+    }
   };
 
   const getSeverityColor = (severity: string) => {

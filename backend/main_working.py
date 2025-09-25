@@ -7,6 +7,7 @@ import re
 from datetime import datetime, timedelta
 from typing import List, Dict, Any
 import random
+from core.sensor import smart_sensor, SensorInput, SensorResponse
 
 app = FastAPI(
     title="Intrusion Detection System",
@@ -480,10 +481,246 @@ async def analyze_traffic(traffic_data: dict):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
+# Smart Sensor Endpoints
+@app.post("/api/sensor/input", response_model=SensorResponse)
+async def process_sensor_input(sensor_input: SensorInput):
+    """Process input through the smart sensor IDS pipeline"""
+    try:
+        # Process the payload through the sensor
+        response = smart_sensor.process_input(sensor_input.payload)
+        
+        # Log the sensor activity
+        sensor_log = {
+            "timestamp": response.timestamp,
+            "sensor_id": response.sensor_id,
+            "input_payload": sensor_input.payload,
+            "status": response.status.value,
+            "detected_attack_type": response.detected_attack_type,
+            "confidence": response.confidence,
+            "source_ip": "127.0.0.1"
+        }
+        
+        # Save sensor log to file (append to existing logs)
+        try:
+            if os.path.exists("data/sensor_logs.json"):
+                with open("data/sensor_logs.json", "r") as f:
+                    sensor_logs = json.load(f)
+            else:
+                sensor_logs = []
+            
+            sensor_logs.append(sensor_log)
+            
+            # Keep only last 1000 logs
+            if len(sensor_logs) > 1000:
+                sensor_logs = sensor_logs[-1000:]
+            
+            with open("data/sensor_logs.json", "w") as f:
+                json.dump(sensor_logs, f, indent=2)
+                
+        except Exception as log_error:
+            # Don't fail the request if logging fails
+            print(f"Warning: Could not save sensor log: {log_error}")
+        
+        return response
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing sensor input: {str(e)}")
+
+@app.get("/api/sensor/status")
+async def get_sensor_status():
+    """Get current sensor status"""
+    try:
+        return smart_sensor.get_status()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting sensor status: {str(e)}")
+
+@app.post("/api/sensor/reset")
+async def reset_sensor():
+    """Reset sensor to normal state"""
+    try:
+        smart_sensor.reset_sensor()
+        return {
+            "status": "success",
+            "message": "Sensor reset to normal state",
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error resetting sensor: {str(e)}")
+
+@app.get("/api/sensor/logs")
+async def get_sensor_logs(limit: int = 50):
+    """Get sensor activity logs"""
+    try:
+        if not os.path.exists("data/sensor_logs.json"):
+            return {
+                "status": "success",
+                "logs": [],
+                "total_logs": 0
+            }
+        
+        with open("data/sensor_logs.json", "r") as f:
+            sensor_logs = json.load(f)
+        
+        # Return most recent logs
+        recent_logs = sorted(sensor_logs, key=lambda x: x["timestamp"], reverse=True)[:limit]
+        
+        return {
+            "status": "success",
+            "logs": recent_logs,
+            "total_logs": len(sensor_logs)
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting sensor logs: {str(e)}")
+
+# Rule Management API endpoints
+@app.get("/api/rules")
+async def get_rules():
+    """Get all IDS rules"""
+    try:
+        rules_file = "data/rules.json"
+        if not os.path.exists(rules_file):
+            # Return default rules if file doesn't exist
+            default_rules = [
+                {
+                    "id": 1,
+                    "name": "XSS Attack",
+                    "pattern": r"<script[^>]*>.*?</script>|javascript:|on\w+\s*=|<img[^>]*onerror|<iframe[^>]*src\s*=\s*['\"]javascript:",
+                    "severity": "High",
+                    "description": "Detects Cross-Site Scripting (XSS) attacks",
+                    "enabled": True
+                },
+                {
+                    "id": 2,
+                    "name": "SQL Injection",
+                    "pattern": r"(union|select|insert|delete|drop|update|exec)\s+.*(\s|;|'|\"|--)|('\s*(or|and)\s*['\"]?\d|'\s*or\s*['\"]?\d\s*=\s*['\"]?\d)",
+                    "severity": "High",
+                    "description": "Detects SQL Injection attacks",
+                    "enabled": True
+                },
+                {
+                    "id": 3,
+                    "name": "Directory Traversal",
+                    "pattern": r"(\.\./|\.\.\\\|%2e%2e%2f|%2e%2e\\)",
+                    "severity": "Medium",
+                    "description": "Detects directory traversal attempts",
+                    "enabled": True
+                }
+            ]
+            return {"status": "success", "rules": default_rules}
+        
+        with open(rules_file, "r") as f:
+            rules = json.load(f)
+        
+        return {"status": "success", "rules": rules}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting rules: {str(e)}")
+
+@app.post("/api/rules")
+async def create_rule(rule: dict):
+    """Create a new rule"""
+    try:
+        rules_file = "data/rules.json"
+        
+        # Load existing rules
+        if os.path.exists(rules_file):
+            with open(rules_file, "r") as f:
+                rules = json.load(f)
+        else:
+            rules = []
+        
+        # Add new rule with ID
+        new_rule = {
+            "id": max([r.get("id", 0) for r in rules] + [0]) + 1,
+            "name": rule.get("name", ""),
+            "pattern": rule.get("pattern", ""),
+            "severity": rule.get("severity", "Medium"),
+            "description": rule.get("description", ""),
+            "enabled": rule.get("enabled", True)
+        }
+        
+        rules.append(new_rule)
+        
+        # Save rules
+        with open(rules_file, "w") as f:
+            json.dump(rules, f, indent=2)
+        
+        # Update IDS engine with new rules
+        enabled_rules = [r for r in rules if r.get("enabled", True)]
+        ids_engine.load_rules_from_api(enabled_rules)
+        
+        return {"status": "success", "rule": new_rule}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating rule: {str(e)}")
+
+@app.put("/api/rules/{rule_id}")
+async def update_rule(rule_id: int, rule: dict):
+    """Update an existing rule"""
+    try:
+        rules_file = "data/rules.json"
+        
+        if not os.path.exists(rules_file):
+            raise HTTPException(status_code=404, detail="Rules file not found")
+        
+        with open(rules_file, "r") as f:
+            rules = json.load(f)
+        
+        # Find and update rule
+        for i, r in enumerate(rules):
+            if r.get("id") == rule_id:
+                rules[i].update({
+                    "name": rule.get("name", r["name"]),
+                    "pattern": rule.get("pattern", r["pattern"]),
+                    "severity": rule.get("severity", r["severity"]),
+                    "description": rule.get("description", r.get("description", "")),
+                    "enabled": rule.get("enabled", r.get("enabled", True))
+                })
+                
+                # Save rules
+                with open(rules_file, "w") as f:
+                    json.dump(rules, f, indent=2)
+                
+                # Update IDS engine
+                enabled_rules = [rule for rule in rules if rule.get("enabled", True)]
+                ids_engine.load_rules_from_api(enabled_rules)
+                
+                return {"status": "success", "rule": rules[i]}
+        
+        raise HTTPException(status_code=404, detail="Rule not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating rule: {str(e)}")
+
+@app.delete("/api/rules/{rule_id}")
+async def delete_rule(rule_id: int):
+    """Delete a rule"""
+    try:
+        rules_file = "data/rules.json"
+        
+        if not os.path.exists(rules_file):
+            raise HTTPException(status_code=404, detail="Rules file not found")
+        
+        with open(rules_file, "r") as f:
+            rules = json.load(f)
+        
+        # Find and remove rule
+        rules = [r for r in rules if r.get("id") != rule_id]
+        
+        # Save rules
+        with open(rules_file, "w") as f:
+            json.dump(rules, f, indent=2)
+        
+        # Update IDS engine
+        enabled_rules = [rule for rule in rules if rule.get("enabled", True)]
+        ids_engine.load_rules_from_api(enabled_rules)
+        
+        return {"status": "success", "message": "Rule deleted"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting rule: {str(e)}")
+
 if __name__ == "__main__":
     uvicorn.run(
         "main_working:app",
         host="0.0.0.0",
         port=8000,
-        reload=True
+        reload=False
     )

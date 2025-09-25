@@ -12,13 +12,13 @@ class IDSEngine:
     def __init__(self):
         self.regex_rules = [
             {
-                "name": "SQL Injection",
-                "pattern": r"(union|select|insert|delete|drop|update|exec|script).*(\s|;|'|\"|--)",
+                "name": "XSS Attack",
+                "pattern": r"<script[^>]*>.*?</script>|javascript:|on\w+\s*=|<img[^>]*onerror|<iframe[^>]*src\s*=\s*['\"]javascript:",
                 "severity": "High"
             },
             {
-                "name": "XSS Attack",
-                "pattern": r"<script[^>]*>.*?</script>|javascript:|on\w+\s*=",
+                "name": "SQL Injection",
+                "pattern": r"(union|select|insert|delete|drop|update|exec)\s+.*(\s|;|'|\"|--)|('\s*(or|and)\s*['\"]?\d|'\s*or\s*['\"]?\d\s*=\s*['\"]?\d)",
                 "severity": "High"
             },
             {
@@ -80,6 +80,24 @@ class IDSEngine:
             self.logger.error(f"Invalid regex pattern: {pattern}")
             return False
     
+    def load_rules_from_api(self, rules_data: List[Dict[str, Any]]):
+        """Load rules from API data"""
+        try:
+            updated_rules = []
+            for rule in rules_data:
+                updated_rules.append({
+                    "name": rule.get("name", "Unknown"),
+                    "pattern": rule.get("pattern", ""),
+                    "severity": rule.get("severity", "Medium")
+                })
+            
+            # Update regex rules if valid rules were provided
+            if updated_rules:
+                self.regex_rules = updated_rules
+                self.logger.info(f"Updated {len(updated_rules)} rules from API")
+        except Exception as e:
+            self.logger.error(f"Error loading rules from API: {e}")
+
     def pattern_detection(self, payload: str) -> List[Dict[str, Any]]:
         """Detect malicious patterns using regex rules"""
         detections = []
