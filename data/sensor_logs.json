@@ -232,5 +232,14 @@
     "detected_attack_type": null,
     "confidence": 0.0,
     "source_ip": "127.0.0.1"
+  },
+  {
+    "timestamp": "2025-09-27T10:41:36.142561",
+    "sensor_id": "IDS-001",
+    "input_payload": "'; DROP TABLE users; --",
+    "status": "Attack",
+    "detected_attack_type": "SQL Injection",
+    "confidence": 0.9,
+    "source_ip": "127.0.0.1"
   }
 ]
